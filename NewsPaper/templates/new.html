@@ -1,0 +1,78 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+    {{ post.title |truncatechars:25 }}
+{% endblock title %}
+
+{% block content %}
+<div class="col-lg-12 text-center">
+        <h3>{{ post.title |censor }}</h3>
+        {% for c in post.category.values %}
+            {% if c.slug %}
+                <a href="{% url 'category_show' slug=c.slug %}">{{ c.cat_name |capfirst }}</a>&nbsp&nbsp
+            {% endif %}
+        {% endfor %}
+</div>
+<div class="col-lg-12 text-left">
+    <hr>
+        {{ post.text |censor| linebreaks }}
+</div>
+<center>
+    <form action="" method="get">
+        <i> •&nbsp
+        {{ post.time|date:'d.m.Y H:i' }}
+        &nbsp &nbsp
+        {{ post.author.author_acc.first_name }}&nbsp{{ post.author.author_acc.last_name }}
+        </i> &nbsp • &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+        <input class="btn btn-outline-danger" type="submit" name="like" value="+" />
+        &nbsp <b>{{ post.rating }}</b> &nbsp
+        <input class="btn btn-outline-primary" type="submit" name="dislike" value="-" />
+    </form>
+    <br>
+    <a href="{% url 'post_edit' pk=post.id %}">Изменить</a>
+    &nbsp&nbsp
+    <a href="{% url 'post_delete' pk=post.id %}">Удалить</a>
+    <hr>
+</center>
+{% if comments %}
+    {% for comment in comments %}
+        <div>
+            &nbsp &nbsp
+            {{ comment.text }}
+            <form action="" method="get">
+                <i> &nbsp &nbsp • &nbsp
+                {{ comment.time |date:'d.m.Y H:i' }}
+                &nbsp &nbsp
+                {{ comment.user.username }}
+                </i> &nbsp • &nbsp &nbsp &nbsp
+                <input class="btn btn-outline-danger" type="submit" name="{{comment.pk}}" value="+" />
+                &nbsp <b>{{ comment.rating }}</b> &nbsp
+                <input class="btn btn-outline-primary" type="submit" name="{{comment.pk}}" value="-" />
+            </form>
+        </div>
+    {% endfor %}
+{% endif %}
+{% if request.user.is_authenticated %}
+    {% if request.user != post.author.author_acc %}
+        <div>
+            <br>
+            <form action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="comment"><em> Ваш комментарий &nbsp </em></label>
+                <input type="text" class='form-control' name="comment"> &nbsp
+                <input type="submit" value="Отправить">
+            </form>
+            <br>
+        </div>
+    {% endif %}
+{% else %}
+    <div>
+        <br>
+        Для того, чтобы оставить свой комментарий &nbsp
+        <a class="btn btn-outline-dark" href="{% url 'login' %}" role="button">войдите в аккаунт</a>
+        <br>
+    </div>
+{% endif %}
+{% endblock content %}
