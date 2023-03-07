@@ -59,23 +59,22 @@ def notify_new_post():
 def like_dislike(request, kwargs):
     key = list(dict(request.GET.lists()).keys())[0]
     post_id = kwargs['pk']
+    post = get_object_or_404(Post, id=post_id)
     if key.isalpha():
-        post = get_object_or_404(Post, id=post_id)
         if request.user != post.author.author_acc:
             if key == 'like':
-                Post.like(post)
-                cache.delete(f'post-{post_id}')
+                post.like()
             elif key == 'dislike':
-                Post.dislike(post)
-                cache.delete(f'post-{post_id}')
+                post.dislike()
     elif key.isdigit():
         comment = get_object_or_404(Comment, id=key)
         if request.user != comment.user:
             if request.GET[key] == '+':
-                Comment.like(comment)
+                comment.like()
             elif request.GET[key] == '-':
-                Comment.dislike(comment)
-            cache.delete(f'comments_to_post{post_id}')
+                comment.dislike()
+    post.author.update_rating()
+    cache.delete(f'comments_to_post{post_id}')
 
 
 def send_comment(request, post):

@@ -21,9 +21,9 @@ class UserAccountView(LoginRequiredMixin, TemplateView):
             context['is_author'] = Post.objects.filter(author__author_acc=user).values('id')
             if context['is_author']:
                 current_author = Author.objects.get(author_acc=self.request.user)
-                current_author.update_rating()
                 context['rating'] = current_author.rating
                 context['quantity'] = Post.objects.filter(author=current_author).count()
         logger.info(f'<User id {user.pk} came to his page>')
         return context
+
 
